@@ -1,0 +1,34 @@
+#!/bin/sh
+# 커밋에 비밀 값이 들어가는 것을 막는다. 스테이징된 추가 줄만 검사한다.
+# 오탐이면 해당 줄 끝에 "secret-scan:allow" 주석을 붙인다.
+
+fail=0
+
+# 1) 비밀 값이 들어가는 파일 이름
+files=$(git diff --cached --name-only --diff-filter=ACM |
+  grep -E '(^|/)\.env($|\.)|\.pem$|\.p12$|\.jks$|(^|/)id_rsa' |
+  grep -v '\.env\.example$')
+if [ -n "$files" ]; then
+  echo "[secret-scan] 커밋하면 안 되는 파일:"
+  echo "$files" | sed 's/^/  /'
+  fail=1
+fi
+
+# 2) 추가된 줄에서 키 모양 찾기
+prefix='sk-ant-[A-Za-z0-9_-]{20,}|sk-(proj-)?[A-Za-z0-9_-]{20,}|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|AIza[0-9A-Za-z_-]{30,}|-----BEGIN [A-Z ]*PRIVATE KEY-----'
+assign='(api[_-]?key|secret|passw(or)?d|token|service[_-]?key)["'"'"']?[[:space:]]*[:=][[:space:]]*["'"'"']?[A-Za-z0-9+/_%=-]{20,}'
+
+hits=$(git diff --cached -U0 --diff-filter=ACM |
+  grep -E '^\+' | grep -v '^+++' |
+  grep -v 'secret-scan:allow' |
+  grep -n -i -E "$prefix|$assign")
+if [ -n "$hits" ]; then
+  echo "[secret-scan] 비밀 값으로 보이는 줄:"
+  echo "$hits" | cut -c1-120 | sed 's/^/  /'
+  fail=1
+fi
+
+if [ "$fail" -ne 0 ]; then
+  echo "[secret-scan] 커밋을 중단했다. 값을 환경 변수로 옮기고 다시 커밋한다."
+  exit 1
+fi
