@@ -1,0 +1,24 @@
+# 문서 (로컬에만 둔다)
+docs/
+
+# 비밀 값
+.env
+.env.*
+!.env.example
+
+# Claude Code 개인 설정
+.claude/settings.local.json
+
+# 빌드 결과물
+build/
+target/
+out/
+node_modules/
+dist/
+
+# IDE, OS
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
