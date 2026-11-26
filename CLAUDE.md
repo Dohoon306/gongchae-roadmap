@@ -6,6 +6,8 @@
 
 - 무엇을 만드는지, 범위, 기술 선택을 판단할 때: `docs/01-idea.md`
 - 공고 데이터(잡알리오 API, 샘플 데이터)를 다룰 때: `docs/research/job-data-sources.md`
+- 1차 범위에서 무엇을 어떻게 만들기로 했는지 확인할 때: `docs/02-design-decisions.md`
+- 백엔드 코드를 쓰거나 검토할 때(패키지, 계층, 도메인 사이 규칙): `docs/architecture.md`
 
 ## 작업 흐름
 
