@@ -215,3 +215,70 @@
 10. job.alio.go.kr 공고 상세 페이지의 첨부 다운로드 형태(사이트가 스크립트로 렌더링됨)
 
 → 1번 항목 대부분은 잡알리오 활용신청 후 첫 호출 한 번으로 확인할 수 있다. 키를 받으면 가장 먼저 `ongoingYn=N`과 과거 공시기간으로 목록을 조회하고, 상세조회의 첨부파일 필드를 확인하는 것을 권한다.
+
+---
+
+## 5. 추가 조사 (2026-11-26): 잡알리오 응답 필드
+
+- 목적: 로드맵의 일정 조정에 쓸 날짜가 응답에 있는지 확인한다.
+- 방법: 키가 필요한 호출은 하지 않았다. 공식 페이지 HTML에 들어 있는 Swagger 정의와, 공개 저장소에 올라온 실제 응답 표본(상세 1건 sn=307032, 진행 중 공고 목록 497건)을 읽었다. `rsnOcrnYmd`의 뜻을 확인하려고 키 없이 열리는 ALIO 개방데이터 페이지의 백엔드를 1회 호출했다(sn=303953).
+- 근거
+  - 공식 Swagger: https://www.data.go.kr/data/15125273/openapi.do 의 HTML 소스 `swaggerJson` 변수
+  - 실제 응답 표본: https://github.com/Lcjam/gongchae-bell/tree/main/fixtures (`alio-official-detail-sample.json`, `alio-official-list-sample.json`). 상세 표본은 직접 내려받아 필드 구조를 다시 확인했다.
+  - 잡알리오 화면: https://job.alio.go.kr/recruitview.do?idx=303953
+
+### 결론
+
+1. **[확인] 상세조회의 `steps`에는 전형 단계 이름도, 전형 일정도 없다.** `steps`는 채용분야별 전형 결과 집계(선발 인원, 응시 인원, 경쟁률, 결과 확정일)다. `recrutPbancTtl`의 실제 값은 단계 이름이 아니라 채용분야 이름이다. 진행 중 공고에서는 값이 대부분 null이다.
+2. **[확인] 공고의 날짜 필드는 `pbancBgngYmd`, `pbancEndYmd` 둘뿐이다.** 표본 36건에서 종료일은 본문의 접수 마감일과 모두 같았다. 시작일은 2건에서 접수 시작보다 3~7일 일렀다. 마감 시각은 필드에 없다.
+3. **[확인] 전형 절차는 자유 텍스트 `scrnprcdrMthdExpln`에만 있다.** 표본 497건 모두 값이 있었고 길이는 4~1,982자다. 날짜 형태가 들어 있는 것은 약 25%(123건)이고 형식은 기관마다 다르다.
+4. **[확인] 첨부파일 `files[].url`에 다운로드 주소가 온다.** 1절과 4절에 미확인으로 남긴 "다운로드 URL 포함 여부"가 풀렸다. 실제 다운로드는 시도하지 않았다.
+
+`scrnprcdrMthdExpln` 예시:
+
+```
+1. 원서접수 : 2026. 11. 13.(금) 13:00 ~ 11. 25.(수) 14:00 까지
+2. 서류심사 : 2026. 11. 26.(목) 예정, 5배수 선발 [서류심사 합격자 발표 : 2026. 11. 27.(금)]
+3. 면접심사 : 2026. 12. 9.(수) 예정, 1배수 선발
+4. 최종합격자 발표 : 2026. 12. 11.(금) 예정
+5. 임용 : 2027. 1. 4.(월) 예정
+```
+
+```
+1차: 서류심사(필요 시 면접)
+2차: 인사위원회 심의
+```
+
+### 응답 필드
+
+목록·상세 공통(30개 중 주요 항목). 목록조회에서는 `files`와 `steps`가 항상 빈 배열이다.
+
+| 필드 | 뜻 |
+|---|---|
+| `recrutPblntSn` | 채용공시 일련번호(상세조회의 `sn`) |
+| `recrutPbancTtl` | 공고 제목 |
+| `instNm`, `pblntInstCd` | 기관명, 공시기관코드 |
+| `pbancBgngYmd`, `pbancEndYmd` | 공고 시작일, 종료일(YYYYMMDD) |
+| `decimalDay`, `ongoingYn` | 마감까지 남은 일수, 진행 여부(상세에서는 null) |
+| `recrutNope` | 채용 인원 |
+| `recrutSe`/`recrutSeNm` | 채용구분 코드/이름(예: 신입) |
+| `hireTypeLst`/`hireTypeNmLst` | 고용유형 코드/이름 목록 |
+| `ncsCdLst`/`ncsCdNmLst` | NCS 코드/이름 목록(쉼표 구분, 예: R600006 / 보건.의료) |
+| `workRgnLst`/`workRgnNmLst` | 근무지 코드/이름 목록 |
+| `acbgCondLst`/`acbgCondNmLst` | 학력조건 코드/이름 목록 |
+| `aplyQlfcCn` | 응시자격(자유 텍스트) |
+| `disqlfcRsn` | 결격사유(자유 텍스트) |
+| `prefCondCn`, `prefCn` | 우대조건 요약, 우대 내용(자유 텍스트) |
+| `scrnprcdrMthdExpln` | 전형 절차·방법 설명(자유 텍스트) |
+| `srcUrl` | 기관 채용 페이지 주소 |
+
+상세 `steps[]`: `recrutStepSn`, `recrutPblntSn`, `recrutPbancTtl`(채용분야 이름), `sortNo`, `minStepSn`, `maxStepSn`, `recrutNope`, `aplyNope`, `cmpttRt`, `rsnOcrnYmd`(결과 확정일, 1건 대조로 확인).
+
+상세 `files[]`: `recrutAtchFileNo`, `sortNo`, `atchFileNm`, `atchFileType`(표본상 A=공고문, B=입사지원서, C=직무기술서로 추정), `url`.
+
+### 여전히 확인하지 못한 것
+
+- 코드정의서 첨부파일(`atchFileType`, 고용유형·채용구분 등의 전체 코드표)
+- `ongoingYn=N`으로 마감 공고가 실제로 반환되는지, 몇 년 전까지 조회되는지
+- 승인 방식과 소요 시간, 하루 호출 한도
+
