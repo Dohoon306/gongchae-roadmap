@@ -33,3 +33,17 @@
 - 시험용 이력서와 자기소개서는 지어낸 내용만 쓴다. 실제 개인정보는 저장소에 넣지 않는다.
 - 저장소를 새로 받으면 `git config core.hooksPath .githooks`를 한 번 실행한다.
 - 커밋과 푸시는 사용자가 요청할 때 한다.
+
+## Agent skills
+
+### Issue tracker
+
+명세와 티켓은 GitHub Issues(`Dohoon306/gongchae-roadmap`)에 둔다. `docs/agents/issue-tracker.md` 참고.
+
+### Triage labels
+
+기본 라벨 다섯 개(`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`)를 쓴다. `docs/agents/triage-labels.md` 참고.
+
+### Domain docs
+
+단일 구조: 루트의 `GLOSSARY.md`와 `docs/adr/`. `docs/agents/domain.md` 참고.
