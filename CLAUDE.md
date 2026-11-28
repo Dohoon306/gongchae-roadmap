@@ -8,6 +8,7 @@
 - 공고 데이터(잡알리오 API, 샘플 데이터)를 다룰 때: `docs/research/job-data-sources.md`
 - 1차 범위에서 무엇을 어떻게 만들기로 했는지 확인할 때: `docs/02-design-decisions.md`
 - 백엔드 코드를 쓰거나 검토할 때(패키지, 계층, 도메인 사이 규칙): `docs/architecture.md`
+- 화면을 만들거나 고칠 때(화면 구성, 색과 글꼴, 상태별 모습, 문구): `docs/03-design.md`. 시안 그림은 `docs/design/`
 
 ## 작업 흐름
 
